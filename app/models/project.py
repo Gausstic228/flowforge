@@ -80,8 +80,13 @@ class Project(db.Model):
         return self.role_of(user) is Role.OWNER
 
     def can_suggest(self, user) -> bool:
-        """Присылать предложения может любой вошедший, кто вообще видит проект."""
-        return bool(getattr(user, "is_authenticated", False)) and self.can_view(user)
+        """Предложения — только для «внешних» людей: owner/editor правят
+        сами и предложений не шлют, гости без входа — тоже не могут."""
+        if user is None or not getattr(user, "is_authenticated", False):
+            return False
+        if not self.can_view(user):
+            return False
+        return self.role_of(user) not in (Role.OWNER, Role.EDITOR)
 
     def public_dict(self, viewer=None) -> dict:
         role = self.role_of(viewer)

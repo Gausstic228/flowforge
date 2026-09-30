@@ -28,15 +28,22 @@ window.FF.panel = (function () {
     return div.innerHTML;
   }
 
+  function _avatarHtml(user) {
+    if (user && user.avatar_url) {
+      return `<img class="avatar avatar-sm" src="${escapeHtml(user.avatar_url)}" alt="" style="margin-right:8px;">`;
+    }
+    const initial = ((user && (user.display_name || user.username)) || "?").slice(0, 1).toUpperCase();
+    return `<span class="avatar avatar-sm avatar-fallback" style="margin-right:8px;">${escapeHtml(initial)}</span>`;
+  }
+
   // ------------------------------------------------------------------
   // Модалка настроек проекта
   // ------------------------------------------------------------------
   function openSettings() {
     document.getElementById("settings-modal").style.display = "flex";
     document.getElementById("visibility-select").value = project.visibility;
-    _renderSlugDisplay();
     _renderMembers();
-    _renderSettingsLinks();
+    _syncSlugRow();
   }
 
   function closeSettings() {
@@ -45,7 +52,35 @@ window.FF.panel = (function () {
 
   function _renderSlugDisplay() {
     const host = document.getElementById("slug-display");
-    host.textContent = project.slug ? window.location.origin + "/" + project.slug : "";
+    host.textContent = project.slug
+      ? window.location.origin + "/" + project.slug
+      : FF.t("ui.settings.slug_hint");
+  }
+
+  function _syncSlugRow() {
+    const vis = document.getElementById("visibility-select").value;
+    document.getElementById("slug-edit-row").style.display = vis === "private" ? "none" : "block";
+    document.getElementById("slug-input").value = project.slug || "";
+    document.getElementById("slug-status").textContent = "";
+    _renderSlugDisplay();
+  }
+
+  async function _saveSlug() {
+    const status = document.getElementById("slug-status");
+    const slug = document.getElementById("slug-input").value.trim();
+    if (!slug) return;
+    try {
+      project = await FF.api.patch(`/api/projects/${project.id}/visibility`, {
+        visibility: project.visibility,
+        slug: slug,
+      });
+      status.className = "slug-status ok";
+      status.textContent = FF.t("ui.settings.slug_free");
+      _renderSlugDisplay();
+    } catch (err) {
+      status.className = "slug-status taken";
+      status.textContent = err.message || FF.t("project.slug_taken");
+    }
   }
 
   function _renderMembers() {
@@ -54,14 +89,14 @@ window.FF.panel = (function () {
 
     const ownerRow = document.createElement("div");
     ownerRow.className = "member-row";
-    ownerRow.innerHTML = `<span>@${escapeHtml(project.owner.username || project.owner.display_name)}</span>
+    ownerRow.innerHTML = `<span class="flex items-center">${_avatarHtml(project.owner)}@${escapeHtml(project.owner.username || project.owner.display_name)}</span>
       <span class="badge badge-role-owner">${FF.t("ui.settings.role_owner")}</span>`;
     host.appendChild(ownerRow);
 
     (project.members || []).forEach((member) => {
       const row = document.createElement("div");
       row.className = "member-row";
-      row.innerHTML = `<span>@${escapeHtml(member.username || member.display_name)}</span>`;
+      row.innerHTML = `<span class="flex items-center">${_avatarHtml(member)}@${escapeHtml(member.username || member.display_name)}</span>`;
       const right = document.createElement("div");
       right.className = "flex gap-2 items-center";
       const badge = document.createElement("span");
@@ -78,26 +113,10 @@ window.FF.panel = (function () {
     });
   }
 
-  function _renderSettingsLinks() {
-    const host = document.getElementById("settings-links-list");
-    host.innerHTML = "";
-    (project.links || []).forEach((link) => {
-      const row = document.createElement("div");
-      row.className = "link-row";
-      row.innerHTML = `<span>${escapeHtml(link.title)}</span>`;
-      const removeBtn = document.createElement("button");
-      removeBtn.className = "btn btn-ghost btn-sm";
-      removeBtn.textContent = "×";
-      removeBtn.addEventListener("click", () => _removeLink(link.id));
-      row.appendChild(removeBtn);
-      host.appendChild(row);
-    });
-  }
-
   async function _changeVisibility(newVisibility) {
     try {
       project = await FF.api.patch(`/api/projects/${project.id}/visibility`, { visibility: newVisibility });
-      _renderSlugDisplay();
+      _syncSlugRow();
     } catch (err) {
       alert(err.message);
     }
@@ -122,25 +141,6 @@ window.FF.panel = (function () {
     }
   }
 
-  async function _addLink(title, url) {
-    if (!title.trim() || !url.trim()) return;
-    try {
-      project = await FF.api.post(`/api/projects/${project.id}/links`, { title, url });
-      _renderSettingsLinks();
-    } catch (err) {
-      alert(err.message);
-    }
-  }
-
-  async function _removeLink(linkId) {
-    try {
-      project = await FF.api.del(`/api/projects/${project.id}/links/${linkId}`);
-      _renderSettingsLinks();
-    } catch (err) {
-      alert(err.message);
-    }
-  }
-
   function _wireSettingsModal() {
     document.getElementById("btn-open-settings").addEventListener("click", openSettings);
     document.getElementById("btn-close-settings").addEventListener("click", closeSettings);
@@ -155,14 +155,7 @@ window.FF.panel = (function () {
       _addMember(input.value, roleSelect.value).then(() => { input.value = ""; });
     });
 
-    document.getElementById("btn-add-link").addEventListener("click", () => {
-      const titleInput = document.getElementById("new-link-title");
-      const urlInput = document.getElementById("new-link-url");
-      _addLink(titleInput.value, urlInput.value).then(() => {
-        titleInput.value = "";
-        urlInput.value = "";
-      });
-    });
+    document.getElementById("btn-save-slug").addEventListener("click", _saveSlug);
   }
 
   // ------------------------------------------------------------------
@@ -172,6 +165,7 @@ window.FF.panel = (function () {
   // ------------------------------------------------------------------
   function openSuggestionsPanel() {
     document.getElementById("suggestions-panel").style.display = "block";
+    document.getElementById("btn-new-suggestion").style.display = project.can.suggest ? "block" : "none";
     _loadSuggestions();
   }
 
@@ -249,7 +243,8 @@ window.FF.panel = (function () {
     const author = document.createElement("p");
     author.className = "text-faint text-sm";
     author.style.margin = "4px 0";
-    author.textContent = "@" + (suggestion.author.username || suggestion.author.display_name);
+    author.innerHTML = _avatarHtml(suggestion.author) +
+      "@" + escapeHtml(suggestion.author.username || suggestion.author.display_name || "");
     item.appendChild(author);
 
     if (suggestion.comment) {
@@ -298,6 +293,12 @@ window.FF.panel = (function () {
   }
 
   function _wireSuggestionsUi() {
+    // Кто НЕ может предлагать (owner/editor/гости) — не видит ни кнопку
+    // нового предложения, ни панель: право решает сервер (project.can.suggest).
+    if (!project.can.suggest) {
+      const btn = document.getElementById("btn-suggestions");
+      if (btn) btn.style.display = "none";
+    }
     document.getElementById("btn-suggestions").addEventListener("click", openSuggestionsPanel);
     document.getElementById("btn-close-suggestions").addEventListener("click", closeSuggestionsPanel);
     document.getElementById("btn-new-suggestion").addEventListener("click", () => openSuggestionModal(null));

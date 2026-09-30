@@ -192,6 +192,22 @@ window.FF.tree = (function () {
   });
 
   async function _createChild(parentId, kind) {
+    // Модалка с карточками типа и полем названия — вместо prompt():
+    // create-node.js решает только UI, созданием узла владеет этот модуль.
+    if (window.FF.createNode) {
+      const data = await FF.createNode.open(parentId, kind);
+      if (!data) return;
+      kind = data.kind;
+      try {
+        const node = await FF.api.post("/api/nodes", { parent_id: parentId, kind: kind, title: data.title });
+        expandedIds.add(parentId);
+        await _reload();
+        selectNode(node.id);
+      } catch (err) {
+        alert(err.message);
+      }
+      return;
+    }
     try {
       const node = await FF.api.post("/api/nodes", { parent_id: parentId, kind });
       expandedIds.add(parentId);

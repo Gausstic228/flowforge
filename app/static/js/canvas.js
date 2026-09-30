@@ -31,6 +31,26 @@ window.FF.canvas = (function () {
   let mounted = false;
 
   const camera = { x: 0, y: 0, scale: 1 };
+  let toolMode = "select";
+
+  function setToolMode(m) { toolMode = m; if (svg) svg.style.cursor = m === "pan" ? "grab" : ""; }
+  function zoomBy(factor) {
+    const rect = svg.getBoundingClientRect();
+    const cx = rect.width / 2, cy = rect.height / 2;
+    const world = _screenToWorld(rect.left + cx, rect.top + cy);
+    const newScale = Math.min(2.5, Math.max(0.3, camera.scale * factor));
+    camera.scale = newScale;
+    camera.x = cx - world.x * newScale;
+    camera.y = cy - world.y * newScale;
+    _applyCameraTransform();
+  }
+  function zoomFit() { camera.x = 0; camera.y = 0; camera.scale = 1; _applyCameraTransform(); }
+  function deleteSelected() {
+    if (selectedBlockId && (canEdit || suggestModeOn)) {
+      patchNode([{ op: "delete_block", id: selectedBlockId }]);
+      _selectBlock(null);
+    }
+  }
 
   // ------------------------------------------------------------------
   // Монтирование/размонтирование — editor.js вызывает при смене узла
@@ -287,14 +307,14 @@ window.FF.canvas = (function () {
     container.querySelector("#btn-add-block").addEventListener("click", () => {
       const world = _screenToWorld(svg.clientWidth / 2, svg.clientHeight / 2);
       patchNode([{
-        op: "add_block", title: "", shape: "rounded", color: "#9333ea",
+        op: "add_block", title: "", shape: window.FF_SELECTED_SHAPE || "rounded", color: "#e8590c",
         x: world.x - 80, y: world.y - 40, width: 160, height: 80,
         points: [{ rel_x: 0.5, rel_y: 1 }],
       }]);
     });
 
     const suggestBtn = container.querySelector("#btn-suggest-mode");
-    if (!canEdit) {
+    if (project.can && project.can.suggest) {
       suggestBtn.style.display = "inline-flex";
       suggestBtn.addEventListener("click", () => {
         if (suggestModeOn && pendingOps.length > 0) {
@@ -304,6 +324,7 @@ window.FF.canvas = (function () {
         }
       });
     }
+    if (window.FF.canvasTools) FF.canvasTools.wire(container, canEdit);
   }
 
   function _toggleSuggestMode(btn) {
@@ -327,6 +348,12 @@ window.FF.canvas = (function () {
       const blockId = g.getAttribute("data-block-id");
 
       g.querySelector(".free-block-shape").addEventListener("mousedown", (e) => {
+        if (toolMode === "pan") {
+          isPanning = true;
+          panStart = { x: e.clientX - camera.x, y: e.clientY - camera.y };
+          svg.classList.add("panning");
+          return;
+        }
         e.stopPropagation();
         _selectBlock(blockId);
         if (!canEdit && !suggestModeOn) return;
@@ -468,7 +495,14 @@ window.FF.canvas = (function () {
     el.className = "presence-avatar";
     el.title = user.display_name || user.username || "";
     el.setAttribute("data-user-id", user.id || "");
-    el.textContent = (user.display_name || user.username || "?").slice(0, 1).toUpperCase();
+    if (user.avatar_url) {
+      const img = document.createElement("img");
+      img.src = user.avatar_url;
+      img.alt = "";
+      el.appendChild(img);
+    } else {
+      el.textContent = (user.display_name || user.username || "?").slice(0, 1).toUpperCase();
+    }
     return el;
   }
 
@@ -502,5 +536,6 @@ window.FF.canvas = (function () {
     FF.socket.on("server_error", (data) => console.error("Canvas socket error:", data.message));
   }
 
-  return { mount, unmount, currentValidation, patchNode: (ops) => patchNode(ops) };
+  return { mount, unmount, currentValidation, patchNode: (ops) => patchNode(ops),
+           setToolMode, zoomBy, zoomFit, deleteSelected };
 })();
