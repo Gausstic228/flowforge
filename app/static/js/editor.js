@@ -33,6 +33,12 @@ window.FF.editor = (function () {
     workspaceTitle.textContent = node.title;
     FF.panel.setCurrentNode(nodeId);
     FF.tree.setActive(nodeId);
+    // На мобильном дерево — оверлей: после выбора узла убираем его,
+    // чтобы сразу показать содержимое.
+    document.getElementById("editor-tree").classList.remove("is-mobile-open");
+    if (window.matchMedia("(max-width: 960px)").matches) {
+      document.getElementById("btn-expand-tree").style.display = "inline-flex";
+    }
 
     document.getElementById("validation-panel").style.display = "none";
     document.getElementById("suggestions-panel").style.display = "none";
@@ -128,13 +134,18 @@ window.FF.editor = (function () {
   // ------------------------------------------------------------------
   function _wireTreeCollapse() {
     const tree = document.getElementById("editor-tree");
+    const expandBtn = document.getElementById("btn-expand-tree");
     document.getElementById("btn-collapse-tree").addEventListener("click", () => {
       tree.classList.add("is-collapsed");
-      document.getElementById("btn-expand-tree").style.display = "inline-flex";
+      tree.classList.remove("is-mobile-open");
+      expandBtn.style.display = "inline-flex";
     });
-    document.getElementById("btn-expand-tree").addEventListener("click", () => {
+    expandBtn.addEventListener("click", () => {
       tree.classList.remove("is-collapsed");
-      document.getElementById("btn-expand-tree").style.display = "none";
+      // На десктопе дерево и так видимо; is-mobile-open нужен только на
+      // узком экране, где оно скрыто по умолчанию (см. @media в main.css).
+      if (window.matchMedia("(max-width: 960px)").matches) tree.classList.add("is-mobile-open");
+      expandBtn.style.display = "none";
     });
   }
 

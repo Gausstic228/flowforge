@@ -295,7 +295,7 @@ window.FF.panel = (function () {
   function _wireSuggestionsUi() {
     // Кто НЕ может предлагать (owner/editor/гости) — не видит ни кнопку
     // нового предложения, ни панель: право решает сервер (project.can.suggest).
-    if (!project.can.suggest) {
+    if (!project.can.suggest && !project.can.edit) {
       const btn = document.getElementById("btn-suggestions");
       if (btn) btn.style.display = "none";
     }
@@ -315,6 +315,12 @@ window.FF.panel = (function () {
   // ------------------------------------------------------------------
   function init(initialProject) {
     setProject(initialProject);
+    // «Настройки проекта» — только владельцу: гость/viewer/даже editor
+    // туда не должен попасть (право решает сервер, кнопка лишь скрыта).
+    if (!project.can.manage) {
+      const btn = document.getElementById("btn-open-settings");
+      if (btn) btn.style.display = "none";
+    }
     _wireSettingsModal();
     _wireSuggestionsUi();
   }

@@ -28,6 +28,12 @@ window.FF.tree = (function () {
     return kind === "canvas" ? "◇" : "▤";
   }
 
+  // Право на правку дерева решает сервер (FF_PROJECT.can.edit) — фронт
+  // лишь не показывает кнопки тем, кто всё равно получит 403.
+  function _canEdit() {
+    return !!(window.FF_PROJECT && window.FF_PROJECT.can && window.FF_PROJECT.can.edit);
+  }
+
   function _rebuildIndex() {
     childrenByParent = {};
     flatNodes.forEach((node) => {
@@ -98,7 +104,7 @@ window.FF.tree = (function () {
     row.appendChild(toggle);
     row.appendChild(icon);
     row.appendChild(title);
-    if (node.kind === "page") row.appendChild(addBtn);
+    if (node.kind === "page" && _canEdit()) row.appendChild(addBtn);
 
     row.addEventListener("click", () => selectNode(nodeId));
     row.addEventListener("contextmenu", (e) => {
@@ -173,14 +179,17 @@ window.FF.tree = (function () {
       menu.appendChild(item);
     };
 
-    if (node.kind === "page") {
-      addItem("ui.tree.new_page", () => _createChild(nodeId, "page"));
-      addItem("ui.tree.new_canvas", () => _createChild(nodeId, "canvas"));
+    if (_canEdit()) {
+      if (node.kind === "page") {
+        addItem("ui.tree.new_page", () => _createChild(nodeId, "page"));
+        addItem("ui.tree.new_canvas", () => _createChild(nodeId, "canvas"));
+      }
+      if (!forceCreateOnly) {
+        addItem("ui.tree.rename", () => _renamePrompt(nodeId, node.title));
+        if (node.parent_id) addItem("ui.tree.delete", () => _deleteConfirm(nodeId));
+      }
     }
-    if (!forceCreateOnly) {
-      addItem("ui.tree.rename", () => _renamePrompt(nodeId, node.title));
-      if (node.parent_id) addItem("ui.tree.delete", () => _deleteConfirm(nodeId));
-    }
+    if (menu.children.length === 0) return; // нечего показывать — меню не открываем
 
     menu.style.left = event.clientX + "px";
     menu.style.top = event.clientY + "px";
