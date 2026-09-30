@@ -5,18 +5,9 @@
 PostgreSQL/Redis — см. README.md):
 
     python run.py
-
-Обычный `flask run` здесь не подходит: WebSocket (Flask-SocketIO)
-корректно работает только через собственный сервер socketio.run(),
-который патчит сеть под eventlet и понимает Upgrade-запросы. Именно
-поэтому этот файл — единственная предполагаемая точка запуска.
 """
 import eventlet
 
-# monkey_patch ДОЛЖЕН быть первой строчкой, которая что-либо делает —
-# до импорта requests/psycopg2/redis и т.д. Иначе часть стандартной
-# библиотеки (socket, threading) останется синхронной, и eventlet не
-# сможет параллелить WebSocket-соединения так, как задумано.
 eventlet.monkey_patch()
 
 import os
@@ -24,9 +15,18 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from app import create_app, socketio
+from app import create_app, socketio, db
+from flask_migrate import upgrade  # Импортируем функцию миграции
 
 app = create_app()
+
+# Автоматически применяем миграции (создаем таблицы) при старте на Render
+with app.app_context():
+    try:
+        upgrade()
+        print("Database migrations applied successfully.")
+    except Exception as e:
+        print(f"Error applying migrations: {e}")
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
