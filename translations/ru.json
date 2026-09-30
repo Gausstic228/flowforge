@@ -164,5 +164,18 @@
   "ui.canvas.shape_ellipse": "Эллипс",
   "ui.canvas.shape_diamond": "Ромб",
   "ui.canvas.shape_hexagon": "Гексагон",
-  "ui.canvas.shape_parallelogram": "Параллелограмм"
+  "ui.canvas.shape_parallelogram": "Параллелограмм",
+  "node.default_title_page": "Новая страница",
+  "node.default_title_canvas": "Новый холст",
+  "ui.editor.bold": "Ж",
+  "ui.editor.italic": "К",
+  "ui.editor.heading": "Заголовок",
+  "ui.editor.link": "Ссылка",
+  "ui.editor.mention": "Упоминание",
+  "ui.editor.mention_hint": "Вставить ссылку на объект проекта",
+  "ui.editor.mention_option": "выбери объект…",
+  "ui.canvas.hint_create": "Кликайте по холсту, чтобы ставить блоки",
+  "ui.canvas.hint_pan": "Тяните холст мышью",
+  "ui.canvas.hint_connect": "Тяните связь от точки блока к точке другого блока",
+  "ui.canvas.rename_block": "Название блока"
 }

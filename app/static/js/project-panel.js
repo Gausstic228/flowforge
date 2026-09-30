@@ -203,6 +203,12 @@ window.FF.panel = (function () {
     }
   }
 
+  function _statusLabel(status) {
+    const key = "ui.suggestion.status_" + status;
+    const label = FF.t(key);
+    return label !== key ? label : status;
+  }
+
   function _statusBadgeClass(status) {
     if (status === "accepted") return "badge-success";
     if (status === "rejected") return "badge-danger";
@@ -213,7 +219,9 @@ window.FF.panel = (function () {
     const host = document.getElementById("suggestions-list");
     host.innerHTML = "";
     try {
-      const suggestions = await FF.api.get(`/api/suggestions/node/${currentNodeId}?status=pending`);
+      // Без фильтра: принятые/отклонённые предложения остаются в списке со
+      // своим статусом — у каждого есть id, история видна всем участникам.
+      const suggestions = await FF.api.get(`/api/suggestions/node/${currentNodeId}`);
       if (suggestions.length === 0) {
         const empty = document.createElement("p");
         empty.className = "text-secondary text-sm";
@@ -237,7 +245,7 @@ window.FF.panel = (function () {
     const header = document.createElement("div");
     header.className = "flex items-center justify-between";
     header.innerHTML = `<strong>${escapeHtml(suggestion.title)}</strong>
-      <span class="badge ${_statusBadgeClass(suggestion.status)}">${suggestion.status}</span>`;
+      <span class="badge ${_statusBadgeClass(suggestion.status)}">${_statusLabel(suggestion.status)}</span>`;
     item.appendChild(header);
 
     const author = document.createElement("p");
@@ -255,7 +263,9 @@ window.FF.panel = (function () {
       item.appendChild(comment);
     }
 
-    if (project.can.edit) {
+    // Кнопки — только у предложений «на рассмотрении»: принятое остаётся
+    // в истории и менять его поздно.
+    if (project.can.edit && suggestion.status === "pending") {
       const actions = document.createElement("div");
       actions.className = "flex gap-2";
 

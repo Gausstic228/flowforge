@@ -32,8 +32,20 @@ window.FF.canvas = (function () {
 
   const camera = { x: 0, y: 0, scale: 1 };
   let toolMode = "select";
+  // Шаг сетки (совпадает с визуальной сеткой .canvas-stage, 24px = 3 шага)
+  const GRID = 8;
+  const _snap = (v) => Math.round(v / GRID) * GRID;
 
-  function setToolMode(m) { toolMode = m; if (svg) svg.style.cursor = m === "pan" ? "grab" : ""; }
+  function setToolMode(m) {
+    toolMode = m;
+    if (svg) {
+      svg.style.cursor = m === "pan" ? "grab" : m === "create" ? "crosshair" : "";
+    }
+    // connect-режим: точки соединений постоянно видны (как порты в UML)
+    const stage = svg.closest ? svg.closest(".canvas-stage") : null;
+    if (stage) stage.classList.toggle("connect-mode", m === "connect");
+    if (window.FF.canvasTools && FF.canvasTools.onModeChange) FF.canvasTools.onModeChange(m);
+  }
   function zoomBy(factor) {
     const rect = svg.getBoundingClientRect();
     const cx = rect.width / 2, cy = rect.height / 2;
@@ -162,6 +174,13 @@ window.FF.canvas = (function () {
   function _wireCamera() {
     svg.addEventListener("mousedown", (e) => {
       if (e.target === svg || e.target === viewport) {
+        // Режим создания (как в UML/CASE): каждый клик по пустому месту
+        // ставит блок выбранной фигуры; режим держится до Esc / «Выбор».
+        if (toolMode === "create" && (canEdit || suggestModeOn)) {
+          const world = _screenToWorld(e.clientX, e.clientY);
+          _addBlockAt(world.x - 80, world.y - 40);
+          return;
+        }
         isPanning = true;
         panStart = { x: e.clientX - camera.x, y: e.clientY - camera.y };
         svg.classList.add("panning");
@@ -197,6 +216,18 @@ window.FF.canvas = (function () {
     if (!mounted) return;
     isPanning = false;
     svg.classList.remove("panning");
+  });
+
+  // Delete/Backspace удаляет выбранный блок (кроме случаев, когда фокус
+  // в поле ввода — иначе невозможно редактировать текст).
+  window.addEventListener("keydown", (e) => {
+    if (!mounted || (e.key !== "Delete" && e.key !== "Backspace")) return;
+    const tag = (e.target && e.target.tagName) || "";
+    if (tag === "INPUT" || tag === "TEXTAREA" || e.target.isContentEditable) return;
+    if (selectedBlockId && (canEdit || suggestModeOn)) {
+      e.preventDefault();
+      deleteSelected();
+    }
   });
 
   // ------------------------------------------------------------------
@@ -304,13 +335,19 @@ window.FF.canvas = (function () {
   // Добавление блока — панель тулбара внизу холста
   // ------------------------------------------------------------------
   function _wireToolbar(container) {
-    container.querySelector("#btn-add-block").addEventListener("click", () => {
-      const world = _screenToWorld(svg.clientWidth / 2, svg.clientHeight / 2);
+    // Единая точка создания блока: по центру видимой области (кнопка
+    // «+ Добавить блок») или по клику (режим создания из палитры фигур).
+    function _addBlockAt(x, y) {
       patchNode([{
         op: "add_block", title: "", shape: window.FF_SELECTED_SHAPE || "rounded", color: "#e8590c",
-        x: world.x - 80, y: world.y - 40, width: 160, height: 80,
+        x: _snap(x), y: _snap(y), width: 160, height: 80,
         points: [{ rel_x: 0.5, rel_y: 1 }],
       }]);
+    }
+
+    container.querySelector("#btn-add-block").addEventListener("click", () => {
+      const world = _screenToWorld(svg.clientWidth / 2, svg.clientHeight / 2);
+      _addBlockAt(world.x - 80, world.y - 40);
     });
 
     const suggestBtn = container.querySelector("#btn-suggest-mode");
@@ -363,6 +400,22 @@ window.FF.canvas = (function () {
         dragOffset = { dx: world.x - block.x, dy: world.y - block.y };
       });
 
+      // Двойной клик — быстрое переименование (op: edit_block, title)
+      g.querySelector(".free-block-shape").addEventListener("dblclick", (e) => {
+        e.stopPropagation();
+        if (!canEdit && !suggestModeOn) return;
+        const block = graphState.blocks.find((b) => b.id === blockId);
+        const title = window.prompt(FF.t("ui.canvas.rename_block") || "Название блока", block.title || "");
+        if (title === null) return;
+        if (suggestModeOn) {
+          pendingOps.push({ op: "edit_block", id: block.id, title: title });
+          block.title = title;
+          rerender();
+        } else {
+          patchNode([{ op: "edit_block", id: block.id, title: title }]);
+        }
+      });
+
       g.querySelectorAll(".connection-point").forEach((circle) => {
         circle.addEventListener("mousedown", (e) => {
           e.stopPropagation();
@@ -403,8 +456,8 @@ window.FF.canvas = (function () {
     if (draggingBlock) {
       const world = _screenToWorld(e.clientX, e.clientY);
       const block = graphState.blocks.find((b) => b.id === draggingBlock);
-      block.x = world.x - dragOffset.dx;
-      block.y = world.y - dragOffset.dy;
+      block.x = _snap(world.x - dragOffset.dx);
+      block.y = _snap(world.y - dragOffset.dy);
       FF.graph.render(graphState, { blocksLayer, connectorsLayer }, { selectedBlockId });
       _wireBlockInteractions();
       if (!suggestModeOn) FF.socket.moveBlock(nodeId, block.id, block.x, block.y, false);

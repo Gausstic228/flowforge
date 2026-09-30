@@ -82,7 +82,57 @@ window.FF.editor = (function () {
       saveTimer = setTimeout(_flushPageSave, SAVE_DEBOUNCE_MS);
     });
 
+    _wirePageToolbar(sourceEl, canEditNow);
     _wireWikiLinkClicks(previewEl);
+  }
+
+  // Тулбар markdown: жирный/курсив/заголовок/ссылка + упоминания объектов
+  // проекта. Упоминание вставляется как [[page:ID|Название]] — ровно тот
+  // формат, который разрешает wiki-links.js (kind + id + подпись через |).
+  function _wirePageToolbar(sourceEl, canEditNow) {
+    const toolbar = workspaceBody.querySelector("#page-editor-toolbar");
+    const select = workspaceBody.querySelector("#mention-select");
+    if (toolbar && !canEditNow) toolbar.style.display = "none";
+
+    const wrap = (before, after, placeholder) => {
+      const start = sourceEl.selectionStart, end = sourceEl.selectionEnd;
+      const text = sourceEl.value;
+      const selected = text.slice(start, end) || placeholder;
+      sourceEl.value = text.slice(0, start) + before + selected + after + text.slice(end);
+      sourceEl.focus();
+      sourceEl.selectionStart = start + before.length;
+      sourceEl.selectionEnd = start + before.length + selected.length;
+      sourceEl.dispatchEvent(new Event("input"));
+    };
+    if (toolbar) toolbar.querySelectorAll("[data-md]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const kind = btn.dataset.md;
+        if (kind === "bold") wrap("**", "**", FF.t("ui.editor.bold"));
+        if (kind === "italic") wrap("*", "*", FF.t("ui.editor.italic"));
+        if (kind === "heading") wrap("## ", "", FF.t("ui.editor.heading"));
+        if (kind === "link") wrap("[", "](https://)", FF.t("ui.editor.link"));
+      });
+    });
+
+    if (!select || !window.FF.tree || !window.FF.tree.getAllNodes) return;
+    FF.tree.getAllNodes().forEach((node) => {
+      const opt = document.createElement("option");
+      opt.value = `${node.kind}:${node.id}`;
+      opt.textContent = (node.kind === "canvas" ? "◇ " : "▤ ") + node.title;
+      select.appendChild(opt);
+    });
+    select.addEventListener("change", () => {
+      if (!select.value) return;
+      const [kind, id] = select.value.split(":");
+      const node = FF.tree.getAllNodes().find((n) => String(n.id) === id);
+      const md = `[[${kind}:${id}|${node ? node.title : "link"}]]`;
+      const start = sourceEl.selectionStart, end = sourceEl.selectionEnd;
+      sourceEl.value = sourceEl.value.slice(0, start) + md + sourceEl.value.slice(end);
+      sourceEl.selectionStart = sourceEl.selectionEnd = start + md.length;
+      sourceEl.focus();
+      sourceEl.dispatchEvent(new Event("input"));
+      select.value = "";
+    });
   }
 
   async function _renderPreview(markdownText) {

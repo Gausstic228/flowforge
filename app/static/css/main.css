@@ -259,9 +259,22 @@ body.is-fullscreen-editor { overflow: hidden; }
 .page-editor { flex: 1; display: grid; grid-template-columns: 1fr 1fr; overflow: hidden; min-height: 0; }
 .page-editor.is-preview-only { grid-template-columns: 1fr; }
 .page-editor.is-preview-only .page-editor-source { display: none; }
-.page-editor-source { border-right: 1px solid var(--line); overflow-y: auto; background: var(--bg-raised); }
+.page-editor-source {
+  border-right: 1px solid var(--line);
+  background: var(--bg-raised);
+  display: flex; flex-direction: column;
+  overflow: hidden; min-height: 0;
+}
+.page-editor-toolbar {
+  display: flex; align-items: center; gap: 2px;
+  padding: 6px 8px; border-bottom: 1px solid var(--line);
+  flex-shrink: 0; overflow-x: auto;
+}
+.page-editor-toolbar .tool-btn { width: 32px; height: 32px; font-size: 13px; font-weight: 700; }
+.mention-select { width: auto; min-width: 130px; max-width: 45%; padding: 5px 8px; font-size: 12px; }
+.page-editor-source textarea { flex: 1; min-height: 0; }
 .page-editor-source textarea {
-  width: 100%; height: 100%; border: none; border-radius: 0; resize: none;
+  width: 100%; flex: 1; min-height: 0; border: none; border-radius: 0; resize: none;
   background: transparent; font-family: var(--font-mono); font-size: 14px; line-height: 1.6; padding: 22px;
 }
 .page-editor-source textarea:focus { box-shadow: none; }
@@ -357,6 +370,18 @@ body.is-fullscreen-editor { overflow: hidden; }
 .shape-item:hover { background: var(--accent-soft); color: var(--ink); }
 .shape-item.active { background: var(--accent); color: #fff; }
 .shape-item svg { flex-shrink: 0; }
+
+/* Подсказка активного режима (низ слева, как статус-бар в CASE) */
+.canvas-hint {
+  position: absolute; left: 14px; bottom: 14px; z-index: 10;
+  font-size: 12px; font-weight: 600; color: var(--ink-soft);
+  background: rgba(255,255,255,.94); border: 1px solid var(--line);
+  border-radius: 999px; padding: 5px 14px;
+  pointer-events: none; max-width: calc(100% - 200px);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+/* connect-режим: порты видны всегда */
+.canvas-stage.connect-mode .connection-point { opacity: 1; }
 
 .validation-item {
   display: flex; gap: 8px; padding: 10px;

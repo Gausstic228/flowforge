@@ -164,5 +164,18 @@
   "ui.canvas.shape_ellipse": "Еліпс",
   "ui.canvas.shape_diamond": "Ромб",
   "ui.canvas.shape_hexagon": "Гексагон",
-  "ui.canvas.shape_parallelogram": "Паралелограм"
+  "ui.canvas.shape_parallelogram": "Паралелограм",
+  "node.default_title_page": "Нова сторінка",
+  "node.default_title_canvas": "Нове полотно",
+  "ui.editor.bold": "Ж",
+  "ui.editor.italic": "К",
+  "ui.editor.heading": "Заголовок",
+  "ui.editor.link": "Посилання",
+  "ui.editor.mention": "Згадка",
+  "ui.editor.mention_hint": "Вставити посилання на об'єкт проєкту",
+  "ui.editor.mention_option": "обери об'єкт…",
+  "ui.canvas.hint_create": "Клацайте полотно, щоб ставити блоки",
+  "ui.canvas.hint_pan": "Тягніть полотно мишею",
+  "ui.canvas.hint_connect": "Тягніть зв'язок від точки блока до точки іншого блока",
+  "ui.canvas.rename_block": "Назва блока"
 }

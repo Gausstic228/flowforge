@@ -258,5 +258,8 @@ window.FF.tree = (function () {
     onSelect = options.onSelect || (() => {});
   }
 
-  return { init, loadTree, selectNode, setActive };
+  // Для упоминаний [[type:id|text]] в markdown — плоский список узлов.
+  function getAllNodes() { return Array.from(flatNodes.values()); }
+
+  return { init, loadTree, selectNode, setActive, getAllNodes };
 })();

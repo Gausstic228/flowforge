@@ -164,5 +164,18 @@
   "ui.canvas.shape_ellipse": "Ellipse",
   "ui.canvas.shape_diamond": "Diamond",
   "ui.canvas.shape_hexagon": "Hexagon",
-  "ui.canvas.shape_parallelogram": "Parallelogram"
+  "ui.canvas.shape_parallelogram": "Parallelogram",
+  "node.default_title_page": "New page",
+  "node.default_title_canvas": "New canvas",
+  "ui.editor.bold": "B",
+  "ui.editor.italic": "I",
+  "ui.editor.heading": "Heading",
+  "ui.editor.link": "Link",
+  "ui.editor.mention": "Mention",
+  "ui.editor.mention_hint": "Insert a link to a project item",
+  "ui.editor.mention_option": "choose an item…",
+  "ui.canvas.hint_create": "Click the canvas to place blocks",
+  "ui.canvas.hint_pan": "Drag the canvas with the mouse",
+  "ui.canvas.hint_connect": "Drag from a block point to another block's point",
+  "ui.canvas.rename_block": "Block title"
 }
