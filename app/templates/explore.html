@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}{{ translations["ui.explore.title"] }} — FlowForge{% endblock %}
+
+{% block content %}
+<div class="container">
+  <h1 style="font-size: 26px; margin: 0 0 24px;" data-i18n="ui.explore.title"></h1>
+
+  <div id="projects-grid" class="grid-cards"></div>
+
+  <div id="empty-state" class="empty-state" style="display: none;">
+    <p data-i18n="ui.explore.empty"></p>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_head %}
+<style>
+  .project-card-title { font-size: 15px; font-weight: 700; margin: 0 0 6px; }
+  .project-card-desc { font-size: 13px; color: var(--text-secondary); margin: 0 0 14px; min-height: 18px; }
+  .project-card-meta { display: flex; align-items: center; justify-content: space-between; }
+</style>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/api-client.js') }}"></script>
+<script src="{{ url_for('static', filename='js/explore.js') }}"></script>
+{% endblock %}

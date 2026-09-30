@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}{{ translations["ui.dashboard.title"] }} — FlowForge{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="flex items-center justify-between gap-3" style="margin-bottom: 24px;">
+    <h1 style="font-size: 26px; margin: 0;" data-i18n="ui.dashboard.title"></h1>
+    <button class="btn btn-primary" id="btn-new-project">
+      <span>＋</span><span data-i18n="ui.dashboard.new_project"></span>
+    </button>
+  </div>
+
+  <div id="projects-grid" class="grid-cards"></div>
+
+  <div id="empty-state" class="empty-state" style="display: none;">
+    <h3 data-i18n="ui.dashboard.empty.title"></h3>
+    <p data-i18n="ui.dashboard.empty.body"></p>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_head %}
+<style>
+  .modal-overlay {
+    position: fixed; inset: 0; z-index: 100;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex; align-items: center; justify-content: center;
+    padding: 20px;
+  }
+  .project-card-title { font-size: 15px; font-weight: 700; margin: 0 0 6px; }
+  .project-card-desc { font-size: 13px; color: var(--text-secondary); margin: 0 0 14px; min-height: 18px; }
+  .project-card-meta { display: flex; align-items: center; justify-content: space-between; }
+</style>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/api-client.js') }}"></script>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}

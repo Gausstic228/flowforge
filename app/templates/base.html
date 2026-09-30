@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="{{ current_lang }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}FlowForge{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+  {% block extra_head %}{% endblock %}
+</head>
+<body class="{% block body_class %}{% endblock %}">
+
+  <script>
+    /*
+      Словарь переводов текущего языка запроса — единственный мост
+      между backend-переводами (translations/<lang>.json) и JS.
+      Сами тексты нигде в .js-файлах не хардкодятся: любой скрипт
+      берёт их отсюда через window.FF_I18N['ключ'].
+    */
+    window.FF_LANG = {{ current_lang | tojson }};
+    window.FF_LANGUAGES = {{ available_languages | tojson }};
+    window.FF_I18N = {{ translations | tojson }};
+    window.FF_USER = {{ current_user_json | tojson }};
+  </script>
+
+  <header class="topbar">
+    <a href="{{ url_for('main.index') }}" class="brand">
+      <span class="brand-mark">◆</span>
+      <span>FlowForge</span>
+    </a>
+
+    <nav class="nav-links">
+      {% if current_user.is_authenticated %}
+        <a href="{{ url_for('main.dashboard') }}"
+           class="nav-link {{ 'active' if request.endpoint == 'main.dashboard' else '' }}"
+           data-i18n="ui.nav.dashboard"></a>
+        <a href="{{ url_for('main.explore') }}"
+           class="nav-link {{ 'active' if request.endpoint == 'main.explore' else '' }}"
+           data-i18n="ui.nav.explore"></a>
+        <div class="lang-switch" id="lang-switch"></div>
+        <a href="{{ url_for('auth.logout') }}" class="btn btn-ghost btn-sm" data-i18n="ui.nav.logout"></a>
+      {% else %}
+        <a href="{{ url_for('main.explore') }}"
+           class="nav-link {{ 'active' if request.endpoint == 'main.explore' else '' }}"
+           data-i18n="ui.nav.explore"></a>
+        <div class="lang-switch" id="lang-switch"></div>
+        <a href="{{ url_for('auth.login_page') }}" class="btn btn-primary btn-sm" data-i18n="ui.login.button"></a>
+      {% endif %}
+    </nav>
+  </header>
+
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+
+  <script src="{{ url_for('static', filename='js/i18n.js') }}"></script>
+  {% block extra_scripts %}{% endblock %}
+</body>
+</html>

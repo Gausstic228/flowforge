@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}FlowForge — {{ translations["ui.hero.title"] }}{% endblock %}
+
+{% block content %}
+<section class="hero">
+  <h1 data-i18n="ui.hero.title"></h1>
+  <p data-i18n="ui.hero.subtitle"></p>
+  <a href="{{ url_for('auth.login_page') }}" class="btn btn-primary" style="padding: 13px 26px; font-size: 15px;">
+    <span data-i18n="ui.hero.cta"></span>
+  </a>
+</section>
+
+<section class="feature-grid">
+  <div class="card">
+    <div class="feature-icon">
+      <span class="port-dot input"></span>
+    </div>
+    <h4 data-i18n="ui.feature.typed_ports.title"></h4>
+    <p data-i18n="ui.feature.typed_ports.body"></p>
+  </div>
+
+  <div class="card">
+    <div class="feature-icon">⚡</div>
+    <h4 data-i18n="ui.feature.realtime.title"></h4>
+    <p data-i18n="ui.feature.realtime.body"></p>
+  </div>
+
+  <div class="card">
+    <div class="feature-icon">🔒</div>
+    <h4 data-i18n="ui.feature.visibility.title"></h4>
+    <p data-i18n="ui.feature.visibility.body"></p>
+  </div>
+
+  <div class="card">
+    <div class="feature-icon">💡</div>
+    <h4 data-i18n="ui.feature.suggestions.title"></h4>
+    <p data-i18n="ui.feature.suggestions.body"></p>
+  </div>
+</section>
+{% endblock %}

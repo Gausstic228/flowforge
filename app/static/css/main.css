@@ -1,0 +1,591 @@
+/* ==========================================================================
+   FlowForge — дизайн-система.
+   Тёмная тема, стеклянные панели, акцент purple+cyan (характерно для
+   технологичных SaaS-продуктов 2026 года), и главное — каждая сторона
+   порта (input/control/output/mechanism) имеет свой цвет, чтобы логику
+   блока можно было считать взглядом, не читая подписи.
+   ========================================================================== */
+
+:root {
+  --bg-deep: #0b0c14;
+  --bg-panel: #12141f;
+  --bg-panel-raised: #171a28;
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.16);
+
+  --text-primary: #eef0f6;
+  --text-secondary: #9aa0b4;
+  --text-faint: #5c6178;
+
+  --accent-primary: #9333ea;     /* purple-600 */
+  --accent-primary-soft: rgba(147, 51, 234, 0.16);
+  --accent-secondary: #0891b2;   /* cyan-600 */
+  --accent-secondary-soft: rgba(8, 145, 178, 0.16);
+
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+
+  /* Цвета сторон порта — по мотивам ICOM, но подобраны для тёмного фона */
+  --port-input: #38bdf8;      /* голубой — "что нужно" */
+  --port-control: #f59e0b;    /* янтарный — "что регулирует" */
+  --port-output: #22c55e;     /* зелёный — "что получаем" */
+  --port-mechanism: #a78bfa;  /* сиреневый — "кто/что выполняет" */
+
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+
+  --shadow-panel: 0 8px 32px rgba(0, 0, 0, 0.4);
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, sans-serif;
+  --font-mono: "SF Mono", "Fira Code", Consolas, monospace;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: radial-gradient(ellipse at top, #161a2c 0%, var(--bg-deep) 55%);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  min-height: 100vh;
+}
+
+a { color: inherit; text-decoration: none; }
+
+/* ---------- Верхняя навигация ---------- */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 28px;
+  border-bottom: 1px solid var(--border-subtle);
+  background: rgba(18, 20, 31, 0.7);
+  backdrop-filter: blur(14px);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  font-size: 17px;
+  letter-spacing: -0.01em;
+}
+
+.brand-mark {
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  display: grid;
+  place-items: center;
+  font-size: 14px;
+}
+
+.nav-links {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.nav-link {
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 500;
+  transition: background 0.15s, color 0.15s;
+}
+.nav-link:hover { background: var(--border-subtle); color: var(--text-primary); }
+.nav-link.active { background: var(--accent-primary-soft); color: #d8b4fe; }
+
+/* ---------- Кнопки ---------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 16px;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.1s, box-shadow 0.15s, background 0.15s;
+}
+.btn:active { transform: scale(0.97); }
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent-primary), #7e22ce);
+  color: white;
+  box-shadow: 0 4px 14px rgba(147, 51, 234, 0.35);
+}
+.btn-primary:hover { box-shadow: 0 6px 20px rgba(147, 51, 234, 0.5); }
+
+.btn-ghost {
+  background: transparent;
+  border-color: var(--border-strong);
+  color: var(--text-primary);
+}
+.btn-ghost:hover { background: var(--border-subtle); }
+
+.btn-danger {
+  background: rgba(239, 68, 68, 0.14);
+  color: #fca5a5;
+  border-color: rgba(239, 68, 68, 0.3);
+}
+.btn-danger:hover { background: rgba(239, 68, 68, 0.22); }
+
+.btn-sm { padding: 6px 11px; font-size: 13px; }
+
+/* ---------- Панели / карточки ---------- */
+.panel {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-panel);
+}
+
+.glass {
+  background: rgba(23, 26, 40, 0.72);
+  backdrop-filter: blur(18px);
+  border: 1px solid var(--border-subtle);
+}
+
+.card {
+  background: var(--bg-panel-raised);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 18px;
+  transition: border-color 0.15s, transform 0.15s;
+}
+.card:hover { border-color: var(--border-strong); }
+
+/* ---------- Формы ---------- */
+input, textarea, select {
+  background: var(--bg-deep);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 14px;
+  padding: 9px 12px;
+  width: 100%;
+}
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px var(--accent-primary-soft);
+}
+
+label {
+  font-size: 13px;
+  color: var(--text-secondary);
+  font-weight: 500;
+  display: block;
+  margin-bottom: 6px;
+}
+
+/* ---------- Бейджи ---------- */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.badge-success { background: rgba(34, 197, 94, 0.14); color: #86efac; }
+.badge-warning { background: rgba(245, 158, 11, 0.14); color: #fcd34d; }
+.badge-danger  { background: rgba(239, 68, 68, 0.14); color: #fca5a5; }
+.badge-neutral { background: var(--border-subtle); color: var(--text-secondary); }
+
+.badge-role-owner  { background: var(--accent-primary-soft); color: #d8b4fe; }
+.badge-role-editor { background: var(--accent-secondary-soft); color: #67e8f9; }
+.badge-role-viewer { background: var(--border-subtle); color: var(--text-secondary); }
+
+/* ---------- Порты — легенда цветов ---------- */
+.port-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+.port-dot.input     { background: var(--port-input); }
+.port-dot.control   { background: var(--port-control); }
+.port-dot.output    { background: var(--port-output); }
+.port-dot.mechanism { background: var(--port-mechanism); }
+
+/* ---------- Утилиты layout ---------- */
+.container { max-width: 1180px; margin: 0 auto; padding: 32px 24px; }
+.flex { display: flex; }
+.flex-col { display: flex; flex-direction: column; }
+.gap-2 { gap: 8px; } .gap-3 { gap: 12px; } .gap-4 { gap: 16px; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.grid-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.text-secondary { color: var(--text-secondary); }
+.text-faint { color: var(--text-faint); }
+.text-sm { font-size: 13px; }
+
+/* ---------- Пустое состояние ---------- */
+.empty-state {
+  text-align: center;
+  padding: 64px 24px;
+  color: var(--text-secondary);
+}
+.empty-state h3 { color: var(--text-primary); margin-bottom: 6px; }
+
+/* ---------- Лендинг ---------- */
+.hero {
+  text-align: center;
+  padding: 96px 24px 64px;
+}
+.hero h1 {
+  font-size: 48px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  margin: 0 0 16px;
+  background: linear-gradient(135deg, #fff 30%, #c4b5fd 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.hero p {
+  font-size: 18px;
+  color: var(--text-secondary);
+  max-width: 600px;
+  margin: 0 auto 32px;
+  line-height: 1.6;
+}
+
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 0 24px 96px;
+}
+.feature-grid .card h4 { margin: 12px 0 6px; }
+.feature-grid .card p { color: var(--text-secondary); font-size: 14px; line-height: 1.5; margin: 0; }
+.feature-icon {
+  width: 40px; height: 40px; border-radius: 10px;
+  display: grid; place-items: center; font-size: 18px;
+  background: var(--accent-primary-soft);
+}
+
+/* ---------- Telegram login-кнопка ---------- */
+.telegram-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 24px;
+  border-radius: 12px;
+  background: #229ed9;
+  color: white;
+  font-weight: 700;
+  font-size: 15px;
+  box-shadow: 0 6px 20px rgba(34, 158, 217, 0.4);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.telegram-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 26px rgba(34, 158, 217, 0.55); }
+
+/* ---------- Полноэкранный редактор ----------
+   Требование "весь экран — редактор": на этой странице шапка сайта
+   (.topbar из base.html) скрывается целиком, а не просто становится
+   тоньше — высота вьюпорта отдаётся дереву узлов и рабочей области. */
+body.is-fullscreen-editor .topbar { display: none; }
+body.is-fullscreen-editor { overflow: hidden; }
+
+.editor-shell {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  height: 100vh;
+}
+
+.editor-tree {
+  border-right: 1px solid var(--border-subtle);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+.editor-tree.is-collapsed { width: 0; overflow: hidden; border-right: none; }
+
+.editor-tree-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border-subtle);
+  flex-shrink: 0;
+}
+
+.tree-node-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text-secondary);
+  user-select: none;
+}
+.tree-node-row:hover { background: var(--border-subtle); }
+.tree-node-row.active { background: var(--accent-primary-soft); color: var(--text-primary); }
+.tree-node-row .tree-node-icon { flex-shrink: 0; opacity: 0.7; width: 14px; text-align: center; }
+.tree-node-row .tree-node-title {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.tree-node-children { padding-left: 16px; }
+.tree-node-toggle {
+  flex-shrink: 0;
+  width: 14px;
+  text-align: center;
+  opacity: 0.5;
+  transition: transform 0.1s;
+}
+.tree-node-toggle.is-expanded { transform: rotate(90deg); }
+.tree-node-add-btn {
+  opacity: 0;
+  flex-shrink: 0;
+  width: 20px; height: 20px;
+  border-radius: 5px;
+  display: grid; place-items: center;
+  color: var(--text-secondary);
+}
+.tree-node-row:hover .tree-node-add-btn { opacity: 1; }
+.tree-node-add-btn:hover { background: var(--border-strong); color: var(--text-primary); }
+
+.editor-workspace {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.editor-workspace-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 20px;
+  border-bottom: 1px solid var(--border-subtle);
+  flex-shrink: 0;
+}
+
+/* ---------- Markdown-страница ---------- */
+.page-editor {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  overflow: hidden;
+}
+.page-editor.is-preview-only { grid-template-columns: 1fr; }
+.page-editor.is-preview-only .page-editor-source { display: none; }
+
+.page-editor-source {
+  border-right: 1px solid var(--border-subtle);
+  overflow-y: auto;
+}
+.page-editor-source textarea {
+  width: 100%;
+  height: 100%;
+  border: none;
+  border-radius: 0;
+  resize: none;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  line-height: 1.6;
+  padding: 24px;
+}
+.page-editor-source textarea:focus { box-shadow: none; }
+
+.page-editor-preview {
+  overflow-y: auto;
+  padding: 32px 40px;
+}
+.page-editor-preview .md-body {
+  max-width: 720px;
+  margin: 0 auto;
+  line-height: 1.7;
+}
+.md-body h1, .md-body h2, .md-body h3 { line-height: 1.3; margin-top: 1.4em; }
+.md-body h1:first-child, .md-body h2:first-child, .md-body h3:first-child { margin-top: 0; }
+.md-body p { margin: 0.9em 0; }
+.md-body code {
+  background: var(--bg-panel-raised);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+}
+.md-body pre {
+  background: var(--bg-panel-raised);
+  padding: 14px 16px;
+  border-radius: var(--radius-sm);
+  overflow-x: auto;
+}
+.md-body pre code { background: none; padding: 0; }
+.md-body blockquote {
+  border-left: 3px solid var(--accent-primary);
+  margin: 0.9em 0;
+  padding: 2px 16px;
+  color: var(--text-secondary);
+}
+.md-body table { border-collapse: collapse; width: 100%; margin: 0.9em 0; }
+.md-body th, .md-body td { border: 1px solid var(--border-subtle); padding: 8px 12px; text-align: left; }
+
+/* Ссылка на объект проекта — [[type:id|текст]], см. static/js/wiki-links.js */
+.md-body a.wiki-link {
+  color: #67e8f9;
+  border-bottom: 1px dashed rgba(103, 232, 249, 0.4);
+  text-decoration: none;
+}
+.md-body a.wiki-link:hover { border-bottom-style: solid; }
+.md-body a.wiki-link.is-broken { color: var(--danger); border-bottom-color: rgba(239, 68, 68, 0.4); }
+
+/* ---------- Канвас свободных блоков ---------- */
+.canvas-stage {
+  position: relative;
+  overflow: hidden;
+  flex: 1;
+  background:
+    radial-gradient(circle, rgba(255,255,255,0.05) 1px, transparent 1px) 0 0 / 24px 24px,
+    var(--bg-deep);
+}
+
+#svg-canvas { width: 100%; height: 100%; cursor: grab; }
+#svg-canvas.panning { cursor: grabbing; }
+
+/* Форму задаёт data-shape на самом элементе (rectangle/rounded/ellipse/
+   diamond/hexagon/parallelogram — см. canvas-graph.js), а не CSS-класс:
+   форма это данные блока, а не то, что решает программа. Здесь остаются
+   только состояния (выделен/перетаскивается), не сама геометрия. */
+.free-block-shape {
+  cursor: move;
+  stroke-width: 1.5;
+  transition: stroke-width 0.1s;
+}
+.free-block-shape.selected { stroke-width: 3; }
+.free-block-shape:hover { stroke-width: 2.5; }
+
+.free-block-title {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 600;
+  pointer-events: none;
+  user-select: none;
+}
+
+.connection-point {
+  cursor: crosshair;
+  fill: var(--bg-deep);
+  stroke: var(--text-faint);
+  stroke-width: 1.5;
+  opacity: 0;
+  transition: opacity 0.15s, r 0.1s;
+}
+.free-block-group:hover .connection-point,
+.connection-point.is-active { opacity: 1; }
+.connection-point:hover { r: 7; fill: var(--accent-secondary); }
+
+/* Подсветка при рисовании связи — куда сейчас технически можно её
+   завершить; сама возможность решается на лету на фронте (любая точка
+   любого ДРУГОГО блока годится — программа тут ничего не запрещает по
+   смыслу, см. static/js/canvas.js), а не заранее задана backend'ом. */
+.connection-point.compatible-target {
+  opacity: 1;
+  stroke: var(--success);
+  stroke-width: 2.5;
+  animation: point-pulse 1.1s ease-in-out infinite;
+}
+@keyframes point-pulse {
+  0%, 100% { r: 6; }
+  50% { r: 9; }
+}
+
+.connector-line {
+  stroke-width: 2;
+  fill: none;
+  cursor: pointer;
+}
+.connector-line:hover { stroke: var(--accent-secondary) !important; }
+.connector-line.dashed { stroke-dasharray: 6 4; }
+
+.connector-label {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  fill: var(--text-secondary);
+  pointer-events: none;
+  user-select: none;
+}
+
+.connector-preview {
+  stroke: var(--accent-primary);
+  stroke-width: 2;
+  stroke-dasharray: 6 4;
+  fill: none;
+  pointer-events: none;
+}
+
+.cursor-badge {
+  font-size: 11px;
+  font-weight: 600;
+  fill: white;
+}
+
+.toolbar-float {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 4px;
+  padding: 6px;
+  border-radius: var(--radius-md);
+  z-index: 10;
+}
+
+/* Панель со списком блоков "ни с чем не связан" — единственное, что
+   свободная модель ещё проверяет (нет типов, нет "ошибок", только это
+   структурное напоминание), см. app/services/graph_validator.summarize. */
+.validation-item {
+  display: flex;
+  gap: 8px;
+  padding: 10px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-panel-raised);
+  margin-bottom: 8px;
+  font-size: 13px;
+  line-height: 1.4;
+  cursor: pointer;
+}
+.validation-item:hover { background: var(--bg-panel); }
+.validation-item.warning { border-left: 3px solid var(--warning); }
+
+.presence-stack {
+  display: flex;
+}
+.presence-avatar {
+  width: 26px; height: 26px; border-radius: 50%;
+  border: 2px solid var(--bg-panel);
+  margin-left: -8px;
+  background: var(--accent-primary);
+  display: grid; place-items: center;
+  font-size: 11px; font-weight: 700;
+}
+.presence-avatar:first-child { margin-left: 0; }
+
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 4px; }
+::-webkit-scrollbar-track { background: transparent; }

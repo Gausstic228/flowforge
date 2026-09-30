@@ -1,0 +1,28 @@
+# FlowForge — зависимости.
+# Установка:  pip install -r requirements.txt
+# Никакого Docker не требуется — только Python, PostgreSQL и Redis,
+# установленные локально (см. README.md).
+
+Flask==3.0.3
+Flask-SQLAlchemy==3.1.1
+Flask-Migrate==4.0.7
+Flask-Login==0.6.3
+Flask-SocketIO==5.3.6
+
+# eventlet — асинхронный воркер для Flask-SocketIO. Без него
+# WebSocket-соединения будут работать только по одному за раз.
+eventlet==0.36.1
+
+# python-socketio тянется как зависимость Flask-SocketIO, но фиксируем
+# явно, чтобы версия клиента/сервера не разъехалась при апгрейде.
+python-socketio==5.11.2
+
+redis==5.0.4
+psycopg2-binary==2.9.9
+
+# HTTP-запросы к Telegram OIDC endpoints (auth/token/jwks) и
+# верификация подписанных id_token.
+requests==2.32.3
+python-jose[cryptography]==3.3.0
+
+python-dotenv==1.0.1
