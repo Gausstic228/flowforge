@@ -18,7 +18,7 @@ eventlet==0.36.1
 python-socketio==5.11.2
 
 redis==5.0.4
-psycopg2-binary==2.9.9
+psycopg[binary]
 
 # HTTP-запросы к Telegram OIDC endpoints (auth/token/jwks) и
 # верификация подписанных id_token.
